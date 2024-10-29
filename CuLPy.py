@@ -3,9 +3,7 @@
 # This program is free software distributed under the MIT License 
 # A copy of the MIT License can be found at 
 # https://github.com/kaynarob/CuLPy/blob/main/LICENSE.md
-
-""" CuLPY model for 1-dimentional configuration - 2 box """
-
+""" CuLPY model example for 0-dimentional configuration """
 
 import math
 import time
@@ -13,44 +11,40 @@ import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
 
-
 start_time = time.time()
 # =========================================================================== #
-# Case specific properties, file names, initialization values /
+# Case specific properties /
 # =========================================================================== #
-H_CL1 =                  # Average water depth for box 1
-H_CL2 =                  # Average water depth for box 2
-Altitude =               # Site specific altitude (m).
-sim_start_date = ""      # Simulation start date
-sim_end_date = ""        # Simulation end date
-JDay_start_date = ""     # Input starting Julian day
-dt =                     # time step in days
-kmc_file_name = ""       # model parameter file name and path
+H_CL  = 3.2751               # Average water depth
+Altitude = 0.0               # Site specific altitude (m).
+sim_start_date = "2014-01-01"
+sim_end_date = "2024-12-31"
+JDay_start_date = "2014-01-01"
+dt = 1 / 240  # time step in days
+kmc_file_name = 'input/constants_pelagic_0d.txt'
 # initial concentration for each box 
-# box 1, initial concentrations
-state_vars_init_dict1 = {"Cpy": ,  
-                        "Cpoc": ,  "Cpon": , "Cpop": ,
-                        "Cdoc": ,  "Cdon": , "Cdop": ,
-                         "Cam": ,   "Cni": ,  "Cph": , 
-                         "Cox": }
-# box 2, initial concentrations
-state_vars_init_dict2 = {"Cpy": ,  
-                        "Cpoc": ,  "Cpon": , "Cpop": ,
-                        "Cdoc": ,  "Cdon": , "Cdop": ,
-                         "Cam": ,   "Cni": ,  "Cph": , 
-                         "Cox": }
+state_vars_init_dict1 = {"Cpy": 0.680,  
+                        "Cpoc": 2.000,  "Cpon": 0.270, "Cpop": 0.045,
+                        "Cdoc": 11.00,  "Cdon": 4.270, "Cdop": 0.005,
+                         "Cam": 0.040,   "Cni": 2.769,  "Cph": 0.022, 
+                         "Cox": 13.33}
+
+state_vars_init_dict2 = {"Cpy": 0.680,  
+                        "Cpoc": 2.000,  "Cpon": 0.270, "Cpop": 0.045,
+                        "Cdoc": 11.00,  "Cdon": 4.270, "Cdop": 0.005,
+                         "Cam": 0.040,   "Cni": 2.769,  "Cph": 0.022, 
+                         "Cox": 13.33}
 # =========================================================================== #
 # Case specific properties \
 # =========================================================================== #
 
 print('\n# =================================================================== #')
 print('\nmodel initialization...\n')
-total_boxNo = 2
+total_boxNo = 1
 print(f'\tnumber of boxes                : {total_boxNo}')
 sediment_option = 0
 print(f'\tsediment_option                : {int(sediment_option)}')
 print(f'\tpelagic constants file name    : {kmc_file_name}')
-print(f'\tsediment constants file name   : {smc_file_name}')
 print(f'\tsimulation start date          : {sim_start_date}')
 print(f'\tsimulation end date            : {sim_end_date}')
 print(f'\ttime step in days              : {int(1/dt)}')
@@ -104,89 +98,62 @@ def interpolate_wDate(sim_start_date, sim_end_date, time_step_per_day, file_name
 # =========================================================================== #
 # ========================= Read/Interpolate Data \ ========================= #
 
-# ============================ Model parameter \ ============================ #
+# ============================= Model parameter ============================= #
 kmc = kmc_reader(kmc_file_name)  # pelagic compartment parameters
-# ============================ Model parameter / ============================ #
+# ============================= Model parameter ============================= #
 
-# Read and Interpolate data 
-# csv file name and path without extention must given
-df_input_C01_NE = interpolate_wDate(sim_start_date, sim_end_date, 1/dt, "")
-df_input_C01_BS = interpolate_wDate(sim_start_date, sim_end_date, 1/dt, "")
-df_input_C02_RU = interpolate_wDate(sim_start_date, sim_end_date, 1/dt, "")
-df_input_Q = interpolate_wJDay(sim_start_date, sim_end_date, JDay_start_date, 1/dt, "")
-df_input_T = interpolate_wJDay(sim_start_date, sim_end_date, JDay_start_date, 1/dt, "")
-df_input_V = interpolate_wJDay(sim_start_date, sim_end_date, JDay_start_date, 1/dt, "")
-df_input_Ia   = interpolate_wJDay(sim_start_date, sim_end_date, JDay_start_date, 1/dt, "")
-df_input_fDay = interpolate_wJDay(sim_start_date, sim_end_date, JDay_start_date, 1/dt, "")
-df_input_Salt = interpolate_wJDay(sim_start_date, sim_end_date, JDay_start_date, 1/dt, "")
+# Read and interpolate data
+df_input_C01_BS = interpolate_wDate(sim_start_date, sim_end_date, 1/dt, "input/bc_concentration_0")
+df_input_C01_Ri = interpolate_wDate(sim_start_date, sim_end_date, 1/dt, "input/bc_concentration_1")
+df_input_Q = interpolate_wJDay(sim_start_date, sim_end_date, JDay_start_date, 1/dt, "input/fluxes_0d")
+df_input_T = interpolate_wJDay(sim_start_date, sim_end_date, JDay_start_date, 1/dt, "input/temperature")
+df_input_V = interpolate_wJDay(sim_start_date, sim_end_date, JDay_start_date, 1/dt, "input/volume_t_0d")
+df_input_Ia   = interpolate_wJDay(sim_start_date, sim_end_date, JDay_start_date, 1/dt, "input/solar_radiation")
+df_input_fDay = interpolate_wJDay(sim_start_date, sim_end_date, JDay_start_date, 1/dt, "input/fraction_daylight")
+df_input_Salt = interpolate_wJDay(sim_start_date, sim_end_date, JDay_start_date, 1/dt, "input/salinity")
 
-# Box1
-Q01_NE    = df_input_Q[''] * 86400 # related column name in csv file must given
-Q01_BS    = df_input_Q[''] * 86400 # related column name in csv file must given
-Q10_BS    = df_input_Q[''] * 86400 # related column name in csv file must given
-C01_NE    = {var: df_input_C01_NE[var] for var in state_vars_init_dict1}
+# Box1 CL Input Arrays
+Q01_Ri    = df_input_Q['q01_Riv']*86400
+Q01_BS    = df_input_Q['q01_BS']*86400
+Q10_BS    = df_input_Q['q10_BS']*86400
+C01_Ri    = {var: df_input_C01_Ri[var] for var in state_vars_init_dict1}
 C01_BS    = {var: df_input_C01_BS[var] for var in state_vars_init_dict1}
-T1        = df_input_T['']         # related column name in csv file must given
-V1        = df_input_V['']         # related column name in csv file must given
-I_a1      = df_input_Ia['']        # related column name in csv file must given
-f_day1    = df_input_fDay['']      # related column name in csv file must given
-salinity1 = df_input_Salt['']      # related column name in csv file must given
-
-# Box2
-Q02_RU    = df_input_Q[''] * 86400 # related column name in csv file must given
-C02_RU    = {var: df_input_C02_RU[var] for var in state_vars_init_dict2}
-T2        = df_input_T['']         # related column name in csv file must given
-V2        = df_input_V['']         # related column name in csv file must given
-I_a2      = df_input_Ia['']        # related column name in csv file must given
-f_day2    = df_input_fDay['']      # related column name in csv file must given
-salinity2 = df_input_Salt['']      # related column name in csv file must given
-
-# Box 1-2 fluxes
-Q12       = df_input_Q[''] * 86400 # related column name in csv file must given
-Q21       = df_input_Q[''] * 86400 # related column name in csv file must given
+T         = df_input_T['tmean']
+V         = df_input_V['volume']
+I_a       = df_input_Ia['Ia']
+f_day     = df_input_fDay['fDay']
+salinity  = df_input_Salt['salt']
 
 # ========================= Read/Interpolate Data / ========================= #
 # =========================================================================== #
 
 # =========================================================================== #
 # ================== Numerical Solution for C dictionary \ ================== #
+C1 = {var: np.zeros(n_iter + 1) for var in state_vars_init_dict1}
+for var in state_vars_init_dict1:
+    C1[var][0] = state_vars_init_dict1[var]
+
+
 def simulate_C():
 
-    C1 = {var: np.zeros(n_iter + 1) for var in state_vars_init_dict1}
-    for var in state_vars_init_dict1:
-        C1[var][0] = state_vars_init_dict1[var]
-    
-    C2 = {var: np.zeros(n_iter + 1) for var in state_vars_init_dict2}
-    for var in state_vars_init_dict2:
-        C2[var][0] = state_vars_init_dict2[var]
-    
+
     
     for t in range(1, n_iter + 1):
         
         if sediment_option == 0:
             
             C1t  = {key: value[t-1] for key, value in C1.items()}
-            R1_t = pelagic_process_rates(C1t, T1[t-1], V1[t-1], H_CL1, I_a1[t-1], salinity1[t-1], f_day1[t-1])
-            
-            C2t  = {key: value[t-1] for key, value in C2.items()}
-            R2_t = pelagic_process_rates(C2t, T2[t-1], V2[t-1], H_CL2, I_a2[t-1], salinity2[t-1], f_day2[t-1])
+            R1_t = pelagic_process_rates(C1t, T.iloc[t-1], V.iloc[t-1], H_CL, I_a.iloc[t-1], salinity.iloc[t-1], f_day.iloc[t-1])
             
             for var in state_vars_init_dict1:
                 
                 C1[var][t] =  + C1[var][t-1] + (
-                              + (Q01_NE[t-1] / V1[t-1]) * C01_NE[var][t-1]
-                              + (Q01_BS[t-1] / V1[t-1]) * C01_BS[var][t-1]
-                              - (Q10_BS[t-1] / V1[t-1]) * C1[var][t-1]
-                              - (Q12[t-1] / V1[t-1]) * C1[var][t-1]
-                              + (Q21[t-1] / V1[t-1]) * C2[var][t-1]
-                              + R1_t[var]) * dt
-                
-                C2[var][t] =  + C2[var][t-1] + (
-                              + (Q02_RU[t-1] / V2[t-1]) * C02_RU[var][t-1]
-                              + (Q12[t-1] / V2[t-1]) * C1[var][t-1]
-                              - (Q21[t-1] / V2[t-1]) * C2[var][t-1] 
-                              + R2_t[var]) * dt
-
+                              + (Q01_Ri.iloc[t-1] / V.iloc[t-1]) * C01_Ri[var].iloc[t-1]
+                              + (Q01_BS.iloc[t-1] / V.iloc[t-1]) * C01_BS[var].iloc[t-1]
+                              - (Q10_BS.iloc[t-1] / V.iloc[t-1]) * C1[var][t-1]
+                              + R1_t[var]
+                              ) * dt
+               
     return C1
 
 # ================== Numerical Solution for C dictionary / ================== #
@@ -364,7 +331,7 @@ def save_C_to_csv(C, sim_start_date, dt, n_iter, output_file_name, boxNo):
 C = simulate_C()
 
 # Save output to csv file
-boxNo = 1
+boxNo = 0
 output_file_name=f"output_{boxNo}.csv"
 save_C_to_csv(C, sim_start_date, dt, n_iter, output_file_name, boxNo)
 
